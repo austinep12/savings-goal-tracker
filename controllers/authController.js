@@ -19,7 +19,7 @@ const generateToken = (userId) => {
  */
 const registerUser = async (req, res) => {
   try {
-    const { name, username, email, password, financialRole = 'Student Saver', institution = '' } = req.body;
+    const { name, username, email, password } = req.body;
     const errors = [];
 
     // Validation
@@ -69,9 +69,7 @@ const registerUser = async (req, res) => {
       name: name.trim(),
       username: cleanUsername,
       email: cleanEmail,
-      password,
-      financialRole,
-      institution: institution ? institution.trim() : ''
+      password
     });
 
     // Generate JWT token (New account starts 100% blank with 0 goals)
@@ -85,9 +83,7 @@ const registerUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         username: user.username,
-        email: user.email,
-        financialRole: user.financialRole,
-        institution: user.institution
+        email: user.email
       }
     });
   } catch (error) {
@@ -148,9 +144,7 @@ const loginUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         username: user.username,
-        email: user.email,
-        financialRole: user.financialRole,
-        institution: user.institution
+        email: user.email
       }
     });
   } catch (error) {

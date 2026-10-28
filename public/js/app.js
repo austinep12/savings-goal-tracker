@@ -151,15 +151,11 @@ const DOM = {
   linkToRegister: document.getElementById('linkToRegister'),
 
   formRegister: document.getElementById('formRegister'),
-  registerRole: document.getElementById('registerRole'),
-  roleCardStudent: document.getElementById('roleCardStudent'),
-  roleCardProfessional: document.getElementById('roleCardProfessional'),
   registerName: document.getElementById('registerName'),
   registerUsername: document.getElementById('registerUsername'),
   registerEmail: document.getElementById('registerEmail'),
   registerPassword: document.getElementById('registerPassword'),
   registerConfirmPassword: document.getElementById('registerConfirmPassword'),
-  registerInstitution: document.getElementById('registerInstitution'),
   registerAlert: document.getElementById('registerAlert'),
   btnSubmitRegister: document.getElementById('btnSubmitRegister'),
   registerSpinner: document.getElementById('registerSpinner'),
@@ -282,7 +278,7 @@ async function initAuthSession() {
 function setAuthenticatedUser(user) {
   state.user = user;
   if (DOM.navUserName) DOM.navUserName.textContent = user.name || user.username;
-  if (DOM.heroGreeting) DOM.heroGreeting.textContent = `Welcome back, ${user.name}! (${user.financialRole || 'Saver'})`;
+  if (DOM.heroGreeting) DOM.heroGreeting.textContent = `Welcome back, ${user.name}!`;
 
   // Update UI display
   DOM.authSection.classList.add('d-none');
@@ -350,20 +346,7 @@ function attachEventListeners() {
     });
   }
 
-  // Role Selector Cards
-  if (DOM.roleCardStudent && DOM.roleCardProfessional) {
-    DOM.roleCardStudent.addEventListener('click', () => {
-      DOM.roleCardStudent.classList.add('active');
-      DOM.roleCardProfessional.classList.remove('active');
-      DOM.registerRole.value = 'Student Saver';
-    });
 
-    DOM.roleCardProfessional.addEventListener('click', () => {
-      DOM.roleCardProfessional.classList.add('active');
-      DOM.roleCardStudent.classList.remove('active');
-      DOM.registerRole.value = 'Working Professional';
-    });
-  }
 
   // Sign In Form Submit
   if (DOM.formSignIn) {
@@ -565,8 +548,6 @@ async function handleRegisterSubmit(e) {
   const email = DOM.registerEmail.value.trim();
   const password = DOM.registerPassword.value;
   const confirmPassword = DOM.registerConfirmPassword.value;
-  const financialRole = DOM.registerRole.value;
-  const institution = DOM.registerInstitution.value.trim();
 
   // Validate
   if (!name || name.length < 2) {
@@ -600,9 +581,7 @@ async function handleRegisterSubmit(e) {
         name,
         username,
         email,
-        password,
-        financialRole,
-        institution
+        password
       })
     });
 

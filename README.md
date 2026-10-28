@@ -34,11 +34,10 @@
 ---
 
 - **MVC Architecture:** Clean separation of concerns across Models, Controllers, Routes, and Frontend Views.
-- **User Authentication & Role Management:**
+- **User Authentication & Privacy:**
   - Secure sign-in and account registration with password hashing (`bcryptjs`) and stateless session tokens (`jsonwebtoken`).
-  - Role selection between **Student Saver** (education & gadget budget) and **Working Professional** (career & long-term milestones).
   - Strict multi-tenant user isolation: users only access, modify, and deposit into their own goals.
-  - Automatic starter goals generated on registration or seamless legacy goal claiming.
+  - Clean new account onboarding: fresh accounts start with 0 goals so users build their own financial roadmap.
 - **Dynamic Analytics Dashboard:**
   - Real-time overall savings percentage progress bar.
   - Total Target Amount ($) vs. Total Current Savings ($).
@@ -169,8 +168,6 @@ The project strictly follows the **Model-View-Controller (MVC)** architectural d
 | `username` | `String` | Required, Unique, Trimmed, Lowercase, Length: 3 - 30 chars | *None* | Unique account handle |
 | `email` | `String` | Required, Unique, Trimmed, Lowercase, Valid Email Regex | *None* | Account email address |
 | `password` | `String` | Required, Min length: 6 (Hashed with `bcryptjs`) | *None* | Hashed password |
-| `financialRole`| `String` | Enum: `['Student Saver', 'Personal Finance', 'Working Professional']` | `'Student Saver'` | Account profile category |
-| `institution`| `String` | Trimmed, Optional | `""` | College or Organization |
 | `createdAt` | `Date` | Automatically managed | `Date.now` | Registration timestamp |
 
 ### 2. Goal Schema (`models/Goal.js`)

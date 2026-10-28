@@ -35,16 +35,6 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Please provide a password'],
       minlength: [6, 'Password must be at least 6 characters']
     },
-    financialRole: {
-      type: String,
-      enum: ['Student Saver', 'Personal Finance', 'Working Professional'],
-      default: 'Student Saver'
-    },
-    institution: {
-      type: String,
-      trim: true,
-      default: ''
-    },
     createdAt: {
       type: Date,
       default: Date.now

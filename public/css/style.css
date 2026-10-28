@@ -607,59 +607,6 @@ main {
   transform: translateY(0);
 }
 
-/* Role Selector Cards (Faithful to User Screenshot 2) */
-.role-selector-card {
-  border: 1.5px solid #cbd5e1;
-  background-color: #ffffff;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
-  border-radius: 10px;
-}
-
-.role-selector-card:hover {
-  border-color: #3b82f6;
-  background-color: #f8fafc;
-}
-
-.role-selector-card i {
-  color: #2563eb;
-  transition: color 0.2s ease;
-}
-
-.role-selector-card strong {
-  color: #1e293b;
-  transition: color 0.2s ease;
-}
-
-.role-selector-card .role-subtext {
-  font-size: 0.68rem;
-  color: #64748b;
-  display: block;
-  line-height: 1.35;
-  transition: color 0.2s ease;
-}
-
-/* Active Role Card: Solid Blue with White Text (Matches Screenshot 2) */
-.role-selector-card.active {
-  border-color: #2563eb !important;
-  background-color: #2563eb !important;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
-}
-
-.role-selector-card.active i,
-.role-selector-card.active strong,
-.role-selector-card.active .role-subtext {
-  color: #ffffff !important;
-}
-
-/* Optional Details Box */
-.optional-details-box {
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-}
-
 /* User Profile Nav Pill */
 .user-nav-pill {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);

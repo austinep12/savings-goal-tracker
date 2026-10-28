@@ -151,39 +151,13 @@
                 <i class="bi bi-wallet2 text-white fs-3"></i>
               </div>
               <h3 class="fw-bold text-dark mb-1">Create an Account</h3>
-              <p class="text-muted small">Join Savings Goal Tracker as a Student Saver or Professional</p>
+              <p class="text-muted small">Sign up to start tracking your personal savings goals</p>
             </div>
 
             <!-- Register Alert Box -->
             <div class="alert alert-danger d-none py-2 px-3 small rounded-3 mb-3" id="registerAlert" role="alert"></div>
 
             <form id="formRegister" novalidate>
-              <!-- Role Selector (Side by side cards matching Screenshot 2) -->
-              <div class="mb-3">
-                <label class="form-label fw-bold text-dark small mb-2">Select Your Account Role <span class="text-danger">*</span></label>
-                <div class="row g-2">
-                  <div class="col-6">
-                    <div class="role-selector-card p-3 rounded-3 text-start active" id="roleCardStudent" data-role="Student Saver">
-                      <div class="d-flex align-items-center gap-2 mb-1">
-                        <i class="bi bi-mortarboard-fill fs-5"></i>
-                        <strong class="small">Student Saver</strong>
-                      </div>
-                      <span class="role-subtext">I want to track student budget and emergency fund</span>
-                    </div>
-                  </div>
-                  <div class="col-6">
-                    <div class="role-selector-card p-3 rounded-3 text-start" id="roleCardProfessional" data-role="Working Professional">
-                      <div class="d-flex align-items-center gap-2 mb-1">
-                        <i class="bi bi-briefcase-fill fs-5"></i>
-                        <strong class="small">Client / Pro</strong>
-                      </div>
-                      <span class="role-subtext">I want to track career & long-term goals</span>
-                    </div>
-                  </div>
-                </div>
-                <input type="hidden" id="registerRole" value="Student Saver">
-              </div>
-
               <!-- Full Name -->
               <div class="mb-3">
                 <label for="registerName" class="form-label fw-bold text-dark small">Full Name <span class="text-danger">*</span></label>
@@ -202,7 +176,7 @@
                   <span class="input-group-text auth-input-icon">
                     <i class="bi bi-at"></i>
                   </span>
-                  <input type="text" class="form-control modern-input border-start-0" id="registerUsername" placeholder="e.g. austine12" required minlength="3" maxlength="30">
+                  <input type="text" class="form-control modern-input border-start-0" id="registerUsername" placeholder="e.g. allen369" required minlength="3" maxlength="30">
                 </div>
               </div>
 
@@ -218,7 +192,7 @@
               </div>
 
               <!-- Password & Confirm Password (Side-by-side) -->
-              <div class="row g-2 mb-3">
+              <div class="row g-2 mb-4">
                 <div class="col-12 col-sm-6">
                   <label for="registerPassword" class="form-label fw-bold text-dark small">Password <span class="text-danger">*</span></label>
                   <input type="password" class="form-control modern-input" id="registerPassword" placeholder="Minimum 6 characters" required minlength="6">
@@ -226,29 +200,6 @@
                 <div class="col-12 col-sm-6">
                   <label for="registerConfirmPassword" class="form-label fw-bold text-dark small">Confirm Password <span class="text-danger">*</span></label>
                   <input type="password" class="form-control modern-input" id="registerConfirmPassword" placeholder="Repeat password" required minlength="6">
-                </div>
-              </div>
-
-              <!-- Academic & Skills Details (Optional Box matching Screenshot 2) -->
-              <div class="optional-details-box p-3 rounded-3 mb-4">
-                <div class="d-flex align-items-center gap-2 mb-2 text-dark small fw-bold">
-                  <i class="bi bi-mortarboard text-primary"></i>
-                  <span>Academic & Skills Details (Optional)</span>
-                </div>
-                <div class="row g-2 mb-2">
-                  <div class="col-12 col-sm-6">
-                    <label for="registerInstitution" class="form-label small text-muted mb-1">College / University</label>
-                    <input type="text" class="form-control form-control-sm modern-input" id="registerInstitution" placeholder="e.g. University College of Engineering">
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <label for="registerDegree" class="form-label small text-muted mb-1">Degree & Branch</label>
-                    <input type="text" class="form-control form-control-sm modern-input" id="registerDegree" placeholder="e.g. B.Tech Computer Science">
-                  </div>
-                </div>
-                <div>
-                  <label for="registerFocus" class="form-label small text-muted mb-1">Core Savings Focus (Comma separated)</label>
-                  <input type="text" class="form-control form-control-sm modern-input" id="registerFocus" placeholder="e.g. Emergency Fund, Laptop, Certifications">
-                  <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">These goals will power your personalized savings milestones.</small>
                 </div>
               </div>
 
