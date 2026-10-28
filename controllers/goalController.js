@@ -206,6 +206,13 @@ const createGoal = async (req, res) => {
       });
     }
 
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection in progress or blocked. Please ensure IP 0.0.0.0/0 is enabled in MongoDB Atlas Network Access.'
+      });
+    }
+
     // Check completion status automatically
     const isCompleted = parsedCurrent >= parsedTarget;
 

@@ -16,14 +16,18 @@ const connectDB = async () => {
   try {
     // Attempt connecting to configured URI (Atlas or local MongoDB)
     const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 4000 // Fast failover if local daemon isn't running
+      serverSelectionTimeoutMS: 10000, // 10s for Atlas cloud connection
+      bufferCommands: false // Disable buffering so errors surface immediately if disconnected
     });
     console.log(`[MongoDB] Connected successfully: ${conn.connection.host}/${conn.connection.name}`);
     return conn;
   } catch (err) {
-    console.warn(`[MongoDB] Could not connect to primary URI (${uri}): ${err.message}`);
+    console.warn(`[MongoDB] Could not connect to primary URI: ${err.message}`);
 
-    // If local MongoDB isn't running, attempt to fallback to mongodb-memory-server for instant demo evaluation
+    // On Vercel / Production, do not attempt in-memory fallback
+    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+      throw err;
+    }
     try {
       console.log('[MongoDB] Attempting to start in-memory MongoDB fallback...');
       const { MongoMemoryServer } = require('mongodb-memory-server');
