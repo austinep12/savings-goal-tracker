@@ -1,10 +1,20 @@
 # 60. Savings Goal Tracker 🎯
 
-> **Academic Submission for Course 23CS2048: Web Technology (IA3)**  
-> **Architecture:** Model-View-Controller (MVC) Pattern  
-> **Tech Stack:** Node.js, Express.js, MongoDB, Mongoose, HTML5, CSS3, JavaScript (ES6+), Bootstrap 5
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Visit_Production_Site-00DC82?style=for-the-badge&logo=vercel&logoColor=white)](https://savings-goal-tracker-pearl.vercel.app/)
+[![Course](https://img.shields.io/badge/Course-23CS2048_(IA3)-4f46e5?style=for-the-badge)](https://github.com/austinep12/savings-goal-tracker)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas_Cloud_Connected-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://savings-goal-tracker-pearl.vercel.app/)
+[![Node.js](https://img.shields.io/badge/Node.js-Express_MVC_REST_API-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://savings-goal-tracker-pearl.vercel.app/)
 
-A production-ready Full-Stack Web Application designed to help users track personal financial milestones, monitor real-time savings progress, make quick deposits, and visualize goal analytics through a responsive dashboard.
+> **Academic Submission for Course 23CS2048: Web Technology (IA3)**  
+> **Student GitHub:** [@austinep12](https://github.com/austinep12)  
+> **Architecture:** Model-View-Controller (MVC) Pattern  
+> **Tech Stack:** Node.js, Express.js, MongoDB Atlas, Mongoose, HTML5, CSS3, JavaScript (ES6+), Bootstrap 5
+
+---
+
+### 🌐 Live Production Links
+- 🚀 **Live Hosted Application:** [https://savings-goal-tracker-pearl.vercel.app/](https://savings-goal-tracker-pearl.vercel.app/)
+- 📁 **GitHub Source Repository:** [https://github.com/austinep12/savings-goal-tracker](https://github.com/austinep12/savings-goal-tracker)
 
 ---
 
