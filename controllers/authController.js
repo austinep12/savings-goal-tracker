@@ -74,55 +74,7 @@ const registerUser = async (req, res) => {
       institution: institution ? institution.trim() : ''
     });
 
-    // Check if there are unassigned legacy goals in database to claim
-    const unassignedCount = await Goal.countDocuments({
-      $or: [{ user: { $exists: false } }, { user: null }]
-    });
-
-    if (unassignedCount > 0) {
-      // Claim existing goals so user's existing work is preserved
-      await Goal.updateMany(
-        { $or: [{ user: { $exists: false } }, { user: null }] },
-        { $set: { user: user._id } }
-      );
-      console.log(`[Auth] Claimed ${unassignedCount} existing goals for user: ${user.username}`);
-    } else {
-      // Seed 2 personalized starter goals for the new user's dashboard
-      const today = new Date();
-      const sixMonthsLater = new Date(today);
-      sixMonthsLater.setMonth(today.getMonth() + 6);
-
-      const oneYearLater = new Date(today);
-      oneYearLater.setFullYear(today.getFullYear() + 1);
-
-      const starterGoals = [
-        {
-          user: user._id,
-          title: financialRole === 'Working Professional' ? 'Emergency Living Reserve' : 'Emergency Student Reserve',
-          targetAmount: 3000,
-          currentAmount: 750,
-          category: 'Emergency',
-          targetDate: sixMonthsLater,
-          description: 'Starter safety net covering essential living expenses and emergencies.',
-          isCompleted: false
-        },
-        {
-          user: user._id,
-          title: 'Workstation / Laptop Upgrade',
-          targetAmount: 1200,
-          currentAmount: 400,
-          category: 'Tech & Gadgets',
-          targetDate: oneYearLater,
-          description: 'Dedicated savings for high-performance workstation equipment.',
-          isCompleted: false
-        }
-      ];
-
-      await Goal.insertMany(starterGoals);
-      console.log(`[Auth] Seeded 2 starter goals for new user: ${user.username}`);
-    }
-
-    // Generate JWT token
+    // Generate JWT token (New account starts 100% blank with 0 goals)
     const token = generateToken(user._id);
 
     return res.status(201).json({
@@ -185,12 +137,6 @@ const loginUser = async (req, res) => {
         message: 'Invalid credentials. Incorrect password.'
       });
     }
-
-    // If there are unassigned goals in the database, associate them to this user
-    await Goal.updateMany(
-      { $or: [{ user: { $exists: false } }, { user: null }] },
-      { $set: { user: user._id } }
-    );
 
     const token = generateToken(user._id);
 

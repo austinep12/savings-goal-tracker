@@ -34,7 +34,6 @@ app.use(async (req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
     try {
       await connectDB();
-      await seedInitialGoals();
     } catch (err) {
       console.warn('[DB Middleware Warning]:', err.message);
     }
@@ -95,54 +94,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-/**
- * Seed database with initial sample goals if collection is empty
- */
-const seedInitialGoals = async () => {
-  try {
-    const count = await Goal.countDocuments();
-    if (count === 0) {
-      console.log('[Seed] Database is empty. Seeding sample savings goals for demonstration...');
 
-      const sampleGoals = [
-        {
-          title: 'Emergency Fund (6 Months)',
-          targetAmount: 10000,
-          currentAmount: 6500,
-          category: 'Emergency',
-          targetDate: new Date('2027-06-30'),
-          description: 'Essential safety net covering 6 months of housing, living expenses, and emergency medical reserves.',
-          isCompleted: false
-        },
-        {
-          title: 'MacBook Pro M3 Max',
-          targetAmount: 2800,
-          currentAmount: 2800,
-          category: 'Tech & Gadgets',
-          targetDate: new Date('2026-12-15'),
-          description: 'High-performance workstation upgrade for full-stack web engineering and containerized workloads.',
-          isCompleted: true
-        },
-        {
-          title: 'Japan Cherry Blossom Tour',
-          targetAmount: 4500,
-          currentAmount: 1800,
-          category: 'Travel',
-          targetDate: new Date('2027-04-15'),
-          description: 'Round-trip airfare, traditional ryokan stays in Kyoto, JR bullet train passes, and culinary adventures.',
-          isCompleted: false
-        }
-      ];
-
-      await Goal.insertMany(sampleGoals);
-      console.log('[Seed] Successfully seeded 3 realistic sample goals.');
-    } else {
-      console.log(`[Seed] Database already contains ${count} savings goal(s). Skipping seed.`);
-    }
-  } catch (seedErr) {
-    console.error('[Seed Error]: Could not seed initial goals:', seedErr.message);
-  }
-};
 
 /**
  * Start the Express Web Server
@@ -151,9 +103,6 @@ const startServer = async () => {
   try {
     // Connect to database
     await connectDB();
-
-    // Seed data if empty
-    await seedInitialGoals();
 
     // Start listening
     const server = app.listen(PORT, () => {
