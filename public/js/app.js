@@ -1,11 +1,13 @@
 /**
  * Savings Goal Tracker - Frontend Application Controller
  * Course: 23CS2048 - Web Technology IA3
- * Tech Stack: Vanilla JavaScript (ES6+), Fetch API, Bootstrap 5
+ * Tech Stack: Vanilla JavaScript (ES6+), Fetch API, Bootstrap 5, JWT Authentication
  */
 
 // Application State
 const state = {
+  user: null,
+  token: localStorage.getItem('savings_tracker_token') || null,
   goals: [],
   summary: {
     totalGoalsCount: 0,
@@ -62,7 +64,7 @@ const CATEGORY_CONFIG = {
   }
 };
 
-// Bulletproof Modal Helpers (Zero delay, instant close)
+// Bulletproof Modal Helpers
 function openModal(modalElem) {
   if (!modalElem) return;
   if (window.bootstrap && bootstrap.Modal) {
@@ -88,8 +90,6 @@ function openModal(modalElem) {
 
 function closeModal(modalElem) {
   if (!modalElem) return;
-
-  // 1. Try clicking dismiss button (Bootstrap native)
   const closeBtn = modalElem.querySelector('[data-bs-dismiss="modal"]');
   if (closeBtn) {
     try {
@@ -98,8 +98,6 @@ function closeModal(modalElem) {
       console.warn('closeBtn click error:', e);
     }
   }
-
-  // 2. Try Bootstrap API
   if (window.bootstrap && bootstrap.Modal) {
     try {
       const inst = bootstrap.Modal.getInstance(modalElem);
@@ -108,8 +106,6 @@ function closeModal(modalElem) {
       console.warn('Bootstrap hide error:', e);
     }
   }
-
-  // 3. Failsafe DOM cleanup guarantee (removes stuck backdrops)
   modalElem.classList.remove('show');
   modalElem.style.display = 'none';
   modalElem.setAttribute('aria-hidden', 'true');
@@ -121,8 +117,55 @@ function closeModal(modalElem) {
   document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
 }
 
+// Helper: Get authenticated request headers
+function getAuthHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  if (state.token) {
+    headers['Authorization'] = `Bearer ${state.token}`;
+  }
+  return headers;
+}
+
 // DOM Element Selectors
 const DOM = {
+  // Sections
+  authSection: document.getElementById('authSection'),
+  dashboardSection: document.getElementById('dashboardSection'),
+  cardSignIn: document.getElementById('cardSignIn'),
+  cardRegister: document.getElementById('cardRegister'),
+  navUserProfile: document.getElementById('navUserProfile'),
+  navUserName: document.getElementById('navUserName'),
+  btnLogout: document.getElementById('btnLogout'),
+  btnOpenCreateModal: document.getElementById('btnOpenCreateModal'),
+  heroGreeting: document.getElementById('heroGreeting'),
+
+  // Auth Forms
+  formSignIn: document.getElementById('formSignIn'),
+  loginIdentifier: document.getElementById('loginIdentifier'),
+  loginPassword: document.getElementById('loginPassword'),
+  btnToggleLoginPassword: document.getElementById('btnToggleLoginPassword'),
+  signInAlert: document.getElementById('signInAlert'),
+  signInSuccessAlert: document.getElementById('signInSuccessAlert'),
+  btnSubmitLogin: document.getElementById('btnSubmitLogin'),
+  loginSpinner: document.getElementById('loginSpinner'),
+  linkToRegister: document.getElementById('linkToRegister'),
+
+  formRegister: document.getElementById('formRegister'),
+  registerRole: document.getElementById('registerRole'),
+  roleCardStudent: document.getElementById('roleCardStudent'),
+  roleCardProfessional: document.getElementById('roleCardProfessional'),
+  registerName: document.getElementById('registerName'),
+  registerUsername: document.getElementById('registerUsername'),
+  registerEmail: document.getElementById('registerEmail'),
+  registerPassword: document.getElementById('registerPassword'),
+  registerConfirmPassword: document.getElementById('registerConfirmPassword'),
+  registerInstitution: document.getElementById('registerInstitution'),
+  registerAlert: document.getElementById('registerAlert'),
+  btnSubmitRegister: document.getElementById('btnSubmitRegister'),
+  registerSpinner: document.getElementById('registerSpinner'),
+  linkToSignIn: document.getElementById('linkToSignIn'),
+
+  // Goals Dashboard
   goalsGrid: document.getElementById('goalsGrid'),
   loadingState: document.getElementById('loadingState'),
   emptyState: document.getElementById('emptyState'),
@@ -133,7 +176,6 @@ const DOM = {
   statusFilter: document.getElementById('statusFilter'),
   sortFilter: document.getElementById('sortFilter'),
   btnResetFilters: document.getElementById('btnResetFilters'),
-  btnOpenCreateModal: document.getElementById('btnOpenCreateModal'),
   heroGoalStats: document.getElementById('heroGoalStats'),
 
   // Diagnostic Elements
@@ -194,12 +236,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setTodayMinDate();
   attachEventListeners();
   fetchSystemInfo();
-  loadAllData();
+
+  // Check if session token exists
+  initAuthSession();
 });
 
-/**
- * Enforce minimum selectable date to today's date in client date picker
- */
 function setTodayMinDate() {
   if (DOM.formTargetDate) {
     const today = new Date();
@@ -210,11 +251,136 @@ function setTodayMinDate() {
   }
 }
 
-/**
- * Bind DOM Event Listeners
- */
+// ==========================================
+// AUTHENTICATION LOGIC & SESSION MANAGEMENT
+// ==========================================
+
+async function initAuthSession() {
+  if (!state.token) {
+    showAuthView();
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/me', {
+      headers: getAuthHeaders()
+    });
+    const json = await res.json();
+
+    if (res.ok && json.success && json.user) {
+      setAuthenticatedUser(json.user);
+      await loadAllData();
+    } else {
+      handleLogout(false);
+    }
+  } catch (err) {
+    console.error('Session verification error:', err);
+    showAuthView();
+  }
+}
+
+function setAuthenticatedUser(user) {
+  state.user = user;
+  if (DOM.navUserName) DOM.navUserName.textContent = user.name || user.username;
+  if (DOM.heroGreeting) DOM.heroGreeting.textContent = `Welcome back, ${user.name}! (${user.financialRole || 'Saver'})`;
+
+  // Update UI display
+  DOM.authSection.classList.add('d-none');
+  DOM.dashboardSection.classList.remove('d-none');
+  DOM.navUserProfile.classList.remove('d-none');
+  DOM.navUserProfile.classList.add('d-flex');
+  DOM.btnOpenCreateModal.classList.remove('d-none');
+  DOM.btnOpenCreateModal.classList.add('d-flex');
+}
+
+function showAuthView() {
+  state.user = null;
+  state.token = null;
+  localStorage.removeItem('savings_tracker_token');
+  localStorage.removeItem('savings_tracker_user');
+
+  DOM.authSection.classList.remove('d-none');
+  DOM.dashboardSection.classList.add('d-none');
+  DOM.navUserProfile.classList.add('d-none');
+  DOM.navUserProfile.classList.remove('d-flex');
+  DOM.btnOpenCreateModal.classList.add('d-none');
+  DOM.btnOpenCreateModal.classList.remove('d-flex');
+
+  // Default to Sign In card
+  DOM.cardSignIn.classList.remove('d-none');
+  DOM.cardRegister.classList.add('d-none');
+}
+
+function handleLogout(showNotification = true) {
+  showAuthView();
+  if (showNotification) {
+    showToast('Signed out successfully.', 'info');
+  }
+}
+
+// ==========================================
+// EVENT LISTENERS
+// ==========================================
+
 function attachEventListeners() {
-  // Reset form when opening Create Modal
+  // Switch between Sign In and Register
+  if (DOM.linkToRegister) {
+    DOM.linkToRegister.addEventListener('click', () => {
+      DOM.cardSignIn.classList.add('d-none');
+      DOM.cardRegister.classList.remove('d-none');
+      hideAuthAlerts();
+    });
+  }
+
+  if (DOM.linkToSignIn) {
+    DOM.linkToSignIn.addEventListener('click', () => {
+      DOM.cardRegister.classList.add('d-none');
+      DOM.cardSignIn.classList.remove('d-none');
+      hideAuthAlerts();
+    });
+  }
+
+  // Toggle Login Password visibility
+  if (DOM.btnToggleLoginPassword) {
+    DOM.btnToggleLoginPassword.addEventListener('click', () => {
+      const type = DOM.loginPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+      DOM.loginPassword.setAttribute('type', type);
+      DOM.btnToggleLoginPassword.querySelector('i').classList.toggle('bi-eye');
+      DOM.btnToggleLoginPassword.querySelector('i').classList.toggle('bi-eye-slash');
+    });
+  }
+
+  // Role Selector Cards
+  if (DOM.roleCardStudent && DOM.roleCardProfessional) {
+    DOM.roleCardStudent.addEventListener('click', () => {
+      DOM.roleCardStudent.classList.add('active');
+      DOM.roleCardProfessional.classList.remove('active');
+      DOM.registerRole.value = 'Student Saver';
+    });
+
+    DOM.roleCardProfessional.addEventListener('click', () => {
+      DOM.roleCardProfessional.classList.add('active');
+      DOM.roleCardStudent.classList.remove('active');
+      DOM.registerRole.value = 'Working Professional';
+    });
+  }
+
+  // Sign In Form Submit
+  if (DOM.formSignIn) {
+    DOM.formSignIn.addEventListener('submit', handleSignInSubmit);
+  }
+
+  // Register Form Submit
+  if (DOM.formRegister) {
+    DOM.formRegister.addEventListener('submit', handleRegisterSubmit);
+  }
+
+  // Logout Button
+  if (DOM.btnLogout) {
+    DOM.btnLogout.addEventListener('click', () => handleLogout(true));
+  }
+
+  // Reset form when opening Create Goal Modal
   if (DOM.btnOpenCreateModal) {
     DOM.btnOpenCreateModal.addEventListener('click', () => {
       resetGoalForm();
@@ -246,7 +412,7 @@ function attachEventListeners() {
     });
   }
 
-  // Category filter
+  // Filters
   if (DOM.categoryFilter) {
     DOM.categoryFilter.addEventListener('change', (e) => {
       state.filters.category = e.target.value;
@@ -254,7 +420,6 @@ function attachEventListeners() {
     });
   }
 
-  // Status filter
   if (DOM.statusFilter) {
     DOM.statusFilter.addEventListener('change', (e) => {
       state.filters.status = e.target.value;
@@ -262,7 +427,6 @@ function attachEventListeners() {
     });
   }
 
-  // Sort filter
   if (DOM.sortFilter) {
     DOM.sortFilter.addEventListener('change', (e) => {
       state.filters.sort = e.target.value;
@@ -306,7 +470,7 @@ function attachEventListeners() {
     });
   }
 
-  // Field Validation
+  // Form Field Validation
   if (DOM.formTargetAmount) {
     DOM.formTargetAmount.addEventListener('input', () => {
       const val = parseFloat(DOM.formTargetAmount.value);
@@ -333,7 +497,7 @@ function attachEventListeners() {
     });
   }
 
-  // Form Submit Handler (Create / Update)
+  // Form Submit Handler (Create / Update Goal)
   if (DOM.goalForm) {
     DOM.goalForm.addEventListener('submit', handleGoalFormSubmit);
   }
@@ -345,7 +509,173 @@ function attachEventListeners() {
 }
 
 // ==========================================
-// API CLIENT METHODS
+// AUTH CONTROLLER HANDLERS
+// ==========================================
+
+async function handleSignInSubmit(e) {
+  e.preventDefault();
+  hideAuthAlerts();
+
+  const identifier = DOM.loginIdentifier.value.trim();
+  const password = DOM.loginPassword.value;
+
+  if (!identifier || !password) {
+    showSignInAlert('Please provide both your email/username and password.');
+    return;
+  }
+
+  setLoginLoading(true);
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password })
+    });
+
+    const json = await res.json();
+
+    if (res.ok && json.success) {
+      state.token = json.token;
+      localStorage.setItem('savings_tracker_token', json.token);
+      localStorage.setItem('savings_tracker_user', JSON.stringify(json.user));
+
+      setAuthenticatedUser(json.user);
+      showToast(json.message || `Welcome back, ${json.user.name}!`, 'success');
+
+      DOM.formSignIn.reset();
+      await loadAllData();
+    } else {
+      showSignInAlert(json.message || 'Invalid email/username or password.');
+    }
+  } catch (err) {
+    console.error('Sign in error:', err);
+    showSignInAlert('Network error connecting to authentication server.');
+  } finally {
+    setLoginLoading(false);
+  }
+}
+
+async function handleRegisterSubmit(e) {
+  e.preventDefault();
+  hideAuthAlerts();
+
+  const name = DOM.registerName.value.trim();
+  const username = DOM.registerUsername.value.trim();
+  const email = DOM.registerEmail.value.trim();
+  const password = DOM.registerPassword.value;
+  const confirmPassword = DOM.registerConfirmPassword.value;
+  const financialRole = DOM.registerRole.value;
+  const institution = DOM.registerInstitution.value.trim();
+
+  // Validate
+  if (!name || name.length < 2) {
+    showRegisterAlert('Full Name must be at least 2 characters.');
+    return;
+  }
+  if (!username || username.length < 3) {
+    showRegisterAlert('Username must be at least 3 characters.');
+    return;
+  }
+  if (!email || !email.includes('@')) {
+    showRegisterAlert('Please provide a valid email address.');
+    return;
+  }
+  if (!password || password.length < 6) {
+    showRegisterAlert('Password must be at least 6 characters long.');
+    return;
+  }
+  if (password !== confirmPassword) {
+    showRegisterAlert('Passwords do not match. Please verify.');
+    return;
+  }
+
+  setRegisterLoading(true);
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        username,
+        email,
+        password,
+        financialRole,
+        institution
+      })
+    });
+
+    const json = await res.json();
+
+    if (res.ok && json.success) {
+      // Clear register form
+      DOM.formRegister.reset();
+
+      // Transition to Sign In card as requested:
+      // "then sign in page should come after accounts created, they should use their sign in credentials to log in"
+      DOM.cardRegister.classList.add('d-none');
+      DOM.cardSignIn.classList.remove('d-none');
+
+      // Pre-fill email/username on login form
+      DOM.loginIdentifier.value = email || username;
+      DOM.loginPassword.value = '';
+
+      // Display pleasant success notice on sign-in card
+      showSignInSuccess('🎉 Account created successfully! Please sign in with your password to view and manage your goals.');
+      showToast('Account created! Please sign in.', 'success');
+
+      setTimeout(() => {
+        if (DOM.loginPassword) DOM.loginPassword.focus();
+      }, 250);
+    } else {
+      const msg = json.errors ? json.errors.join(' ') : (json.message || 'Registration failed.');
+      showRegisterAlert(msg);
+    }
+  } catch (err) {
+    console.error('Registration error:', err);
+    showRegisterAlert('Network error during account registration.');
+  } finally {
+    setRegisterLoading(false);
+  }
+}
+
+function showSignInSuccess(msg) {
+  if (DOM.signInSuccessAlert) {
+    DOM.signInSuccessAlert.textContent = msg;
+    DOM.signInSuccessAlert.classList.remove('d-none');
+  }
+}
+
+function showSignInAlert(msg) {
+  if (DOM.signInSuccessAlert) DOM.signInSuccessAlert.classList.add('d-none');
+  DOM.signInAlert.textContent = msg;
+  DOM.signInAlert.classList.remove('d-none');
+}
+
+function showRegisterAlert(msg) {
+  DOM.registerAlert.textContent = msg;
+  DOM.registerAlert.classList.remove('d-none');
+}
+
+function hideAuthAlerts() {
+  if (DOM.signInAlert) DOM.signInAlert.classList.add('d-none');
+  if (DOM.signInSuccessAlert) DOM.signInSuccessAlert.classList.add('d-none');
+  if (DOM.registerAlert) DOM.registerAlert.classList.add('d-none');
+}
+
+function setLoginLoading(isLoading) {
+  DOM.loginSpinner.classList.toggle('d-none', !isLoading);
+  DOM.btnSubmitLogin.disabled = isLoading;
+}
+
+function setRegisterLoading(isLoading) {
+  DOM.registerSpinner.classList.toggle('d-none', !isLoading);
+  DOM.btnSubmitRegister.disabled = isLoading;
+}
+
+// ==========================================
+// GOAL DATA API METHODS (Protected by JWT)
 // ==========================================
 
 async function fetchSystemInfo() {
@@ -366,10 +696,12 @@ async function fetchSystemInfo() {
 }
 
 async function loadAllData() {
+  if (!state.token) return;
   await Promise.all([fetchGoals(), fetchSummary()]);
 }
 
 async function fetchGoals() {
+  if (!state.token) return;
   try {
     showLoading(true);
     const params = new URLSearchParams();
@@ -380,7 +712,13 @@ async function fetchGoals() {
     if (state.filters.sort) params.append('sort', state.filters.sort);
 
     const url = `/api/goals?${params.toString()}`;
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: getAuthHeaders() });
+
+    if (response.status === 401) {
+      handleLogout(false);
+      return;
+    }
+
     const json = await response.json();
 
     if (json.success) {
@@ -392,15 +730,21 @@ async function fetchGoals() {
     }
   } catch (error) {
     console.error('fetchGoals error:', error);
-    showToast('Network error while connecting to server', 'danger');
   } finally {
     showLoading(false);
   }
 }
 
 async function fetchSummary() {
+  if (!state.token) return;
   try {
-    const response = await fetch('/api/goals/summary');
+    const response = await fetch('/api/goals/summary', { headers: getAuthHeaders() });
+
+    if (response.status === 401) {
+      handleLogout(false);
+      return;
+    }
+
     const json = await response.json();
 
     if (json.success) {
@@ -412,9 +756,6 @@ async function fetchSummary() {
   }
 }
 
-/**
- * Create or Update Goal via API (Instant UI response)
- */
 async function handleGoalFormSubmit(e) {
   e.preventDefault();
 
@@ -443,27 +784,28 @@ async function handleGoalFormSubmit(e) {
   try {
     const response = await fetch(endpoint, {
       method: httpMethod,
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(goalPayload)
     });
+
+    if (response.status === 401) {
+      handleLogout(false);
+      return;
+    }
 
     const json = await response.json();
 
     if (response.ok && json.success) {
-      // 1. Immediately reset button state and close modal
       setSubmitLoading(false);
       closeModal(DOM.goalModal);
       resetGoalForm();
 
-      // 2. Show instant feedback toast
       showToast(json.message || 'Goal saved successfully!', 'success');
 
-      // 3. Trigger celebration if completed
       if (json.data && json.data.isCompleted) {
         launchConfetti();
       }
 
-      // 4. Refresh dashboard data in background
       await loadAllData();
     } else {
       setSubmitLoading(false);
@@ -478,9 +820,6 @@ async function handleGoalFormSubmit(e) {
   }
 }
 
-/**
- * Quick inline fund addition via PATCH /api/goals/:id/add-funds
- */
 async function handleAddFunds(goalId, amountToAdd, inputElem, btnElem) {
   const parsedAmount = parseFloat(amountToAdd);
   if (isNaN(parsedAmount) || parsedAmount <= 0) {
@@ -497,9 +836,14 @@ async function handleAddFunds(goalId, amountToAdd, inputElem, btnElem) {
 
     const response = await fetch(`/api/goals/${goalId}/add-funds`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ amount: parsedAmount })
     });
+
+    if (response.status === 401) {
+      handleLogout(false);
+      return;
+    }
 
     const json = await response.json();
 
@@ -526,9 +870,6 @@ async function handleAddFunds(goalId, amountToAdd, inputElem, btnElem) {
   }
 }
 
-/**
- * Delete a Goal via DELETE /api/goals/:id
- */
 async function handleGoalDelete() {
   if (!state.deletingGoalId) return;
 
@@ -537,8 +878,14 @@ async function handleGoalDelete() {
     DOM.btnConfirmDelete.disabled = true;
 
     const response = await fetch(`/api/goals/${state.deletingGoalId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: getAuthHeaders()
     });
+
+    if (response.status === 401) {
+      handleLogout(false);
+      return;
+    }
 
     const json = await response.json();
 
@@ -588,7 +935,6 @@ function createGoalCardHTML(goal) {
   const percent = Math.min(100, Math.round(((goal.currentAmount / goal.targetAmount) * 100) * 10) / 10);
   const remaining = Math.max(0, goal.targetAmount - goal.currentAmount);
 
-  // Dynamic progress colors: Amber (<50%), Sky Blue (>=50%), Emerald Green (100%)
   let progressColorClass = 'progress-low';
   let progressBadgeBg = 'bg-warning-subtle text-warning';
 
@@ -840,29 +1186,24 @@ function populateEditModal(goal) {
 function validateEntireForm() {
   let isValid = true;
 
-  // Title: 3 to 50 chars
   const titleVal = DOM.formTitle.value.trim();
   const titleValid = titleVal.length >= 3 && titleVal.length <= 50;
   validateField(DOM.formTitle, titleValid);
   if (!titleValid) isValid = false;
 
-  // Category
   const catVal = DOM.formCategory.value;
   const catValid = catVal !== '' && Object.keys(CATEGORY_CONFIG).includes(catVal);
   validateField(DOM.formCategory, catValid);
   if (!catValid) isValid = false;
 
-  // Target Date: today or future
   const dateValid = validateTargetDateField();
   if (!dateValid) isValid = false;
 
-  // Target Amount: > 0
   const targetVal = parseFloat(DOM.formTargetAmount.value);
   const targetValid = !isNaN(targetVal) && targetVal > 0;
   validateField(DOM.formTargetAmount, targetValid);
   if (!targetValid) isValid = false;
 
-  // Current Amount: >= 0 and <= 1,000,000
   const currentVal = parseFloat(DOM.formCurrentAmount.value);
   const currentValid = !isNaN(currentVal) && currentVal >= 0 && currentVal <= 1000000;
   validateField(DOM.formCurrentAmount, currentValid);

@@ -57,8 +57,17 @@
             <i class="bi bi-info-circle-fill text-secondary ms-1"></i>
           </div>
 
-          <!-- Create Goal Action Button -->
-          <button type="button" class="btn btn-action-create d-flex align-items-center gap-2 px-3 py-2 rounded-3 shadow-sm" id="btnOpenCreateModal" data-bs-toggle="modal" data-bs-target="#goalModal">
+          <!-- Logged In User Profile Pill (Visible when logged in) -->
+          <div class="d-none align-items-center gap-2 user-nav-pill px-3 py-1 rounded-pill bg-dark border border-secondary" id="navUserProfile">
+            <i class="bi bi-person-circle text-primary fs-5"></i>
+            <span class="small text-white fw-bold" id="navUserName">User</span>
+            <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0 ms-2" id="btnLogout" title="Sign Out">
+              <i class="bi bi-box-arrow-right"></i>
+            </button>
+          </div>
+
+          <!-- Create Goal Action Button (Visible when logged in) -->
+          <button type="button" class="btn btn-action-create d-none align-items-center gap-2 px-3 py-2 rounded-3 shadow-sm" id="btnOpenCreateModal" data-bs-toggle="modal" data-bs-target="#goalModal">
             <i class="bi bi-plus-circle-fill fs-5"></i>
             <span class="fw-bold">Create Goal</span>
           </button>
@@ -67,261 +76,463 @@
     </nav>
   </header>
 
-  <!-- Main Container -->
+  <!-- Main Content Wrapper -->
   <main class="container-xl py-4">
 
-    <!-- System Diagnostic Banner (Proves Node.js & MongoDB actively powering the application) -->
-    <div class="system-diagnostic-bar mb-4 p-3 rounded-3 d-flex flex-wrap align-items-center justify-content-between gap-3 shadow-sm">
-      <div class="d-flex flex-wrap align-items-center gap-3">
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge bg-dark text-white border border-secondary px-2 py-1">
-            <i class="bi bi-server text-warning me-1"></i> Backend:
-          </span>
-          <span class="fw-semibold text-white small" id="sysNodeStatus">Node.js v24 (Express.js)</span>
-        </div>
-        <div class="diagnostic-divider d-none d-md-block"></div>
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge bg-dark text-white border border-secondary px-2 py-1">
-            <i class="bi bi-database-check text-success me-1"></i> Database:
-          </span>
-          <span class="fw-semibold text-success small" id="sysDbStatus">MongoDB (Mongoose ODM) &bull; Connected</span>
-        </div>
-        <div class="diagnostic-divider d-none d-md-block"></div>
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge bg-dark text-white border border-secondary px-2 py-1">
-            <i class="bi bi-layers-fill text-info me-1"></i> Pattern:
-          </span>
-          <span class="fw-semibold text-info small">MVC (Models, Views, Controllers, Routes)</span>
-        </div>
-      </div>
-      <div>
-        <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1 small" data-bs-toggle="modal" data-bs-target="#systemInfoModal">
-          <i class="bi bi-cpu me-1"></i> System Info
-        </button>
-      </div>
-    </div>
+    <!-- ========================================== -->
+    <!-- SECTION A: AUTHENTICATION VIEWS (Sign In / Register) -->
+    <!-- ========================================== -->
+    <section id="authSection" class="py-4">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 col-xl-5">
 
-    <!-- Top Hero Banner -->
-    <section class="hero-banner mb-4 p-4 p-md-5 rounded-4 text-white position-relative overflow-hidden shadow">
-      <div class="row align-items-center position-relative z-1">
-        <div class="col-lg-8">
-          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill hero-tag mb-3">
-            <i class="bi bi-stars text-warning"></i>
-            <span class="small fw-semibold">Smart Financial Target Management</span>
-          </div>
-          <h1 class="hero-title fw-extrabold mb-2">Track, Save & Achieve Your Financial Milestones</h1>
-          <p class="hero-description text-white-50 mb-0">
-            Real-time analytics dashboard with full-stack CRUD capabilities, automated progress calculations, quick deposits, and dual-layer validation.
-          </p>
-        </div>
-        <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
-          <div class="hero-stat-card d-inline-flex flex-column align-items-lg-end p-3 rounded-3">
-            <span class="text-white-50 small text-uppercase fw-semibold tracking-wider">Active Milestones</span>
-            <span class="fs-2 fw-bolder text-white" id="heroGoalStats">3 Goals Active</span>
-            <small class="text-success fw-semibold"><i class="bi bi-check-circle-fill me-1"></i>Live Sync Enabled</small>
-          </div>
-        </div>
-      </div>
-      <div class="hero-glow-1"></div>
-      <div class="hero-glow-2"></div>
-    </section>
-
-    <!-- SECTION 2: Top Analytics Metric Bar -->
-    <section class="mb-4" aria-label="Savings Analytics Overview">
-      <div class="row g-3">
-        <!-- Metric 1: Overall Progress -->
-        <div class="col-12 col-sm-6 col-xl-3">
-          <div class="card h-100 metric-card border-0 rounded-4 shadow-sm">
-            <div class="card-body p-4 d-flex flex-column justify-content-between">
-              <div class="d-flex align-items-center justify-content-between mb-3">
-                <span class="metric-label">Overall Progress</span>
-                <div class="metric-icon-wrapper bg-indigo-subtle text-indigo">
-                  <i class="bi bi-pie-chart-fill"></i>
-                </div>
+          <!-- 1. SIGN IN CARD (Matches User Design Screenshot 1) -->
+          <div class="card auth-card border-0 shadow-lg rounded-4 p-4 p-md-5" id="cardSignIn">
+            <div class="text-center mb-4">
+              <div class="auth-icon-badge mx-auto mb-3">
+                <i class="bi bi-wallet2 text-white fs-3"></i>
               </div>
-              <div>
-                <div class="d-flex align-items-baseline gap-2 mb-2">
-                  <h2 class="fs-2 fw-bolder mb-0 text-dark" id="metricOverallProgress">0%</h2>
-                  <small class="text-muted" id="metricRemainingText">of total target</small>
-                </div>
-                <div class="progress progress-track rounded-pill">
-                  <div class="progress-bar progress-bar-striped progress-bar-animated bg-indigo" id="metricProgressBar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-              </div>
+              <h3 class="fw-bold text-dark mb-1">Welcome Back</h3>
+              <p class="text-muted small">Sign in to your Savings Goal Tracker account</p>
             </div>
-          </div>
-        </div>
 
-        <!-- Metric 2: Total Target Amount -->
-        <div class="col-12 col-sm-6 col-xl-3">
-          <div class="card h-100 metric-card border-0 rounded-4 shadow-sm">
-            <div class="card-body p-4 d-flex flex-column justify-content-between">
-              <div class="d-flex align-items-center justify-content-between mb-3">
-                <span class="metric-label">Total Target</span>
-                <div class="metric-icon-wrapper bg-purple-subtle text-purple">
-                  <i class="bi bi-bullseye"></i>
+            <!-- Sign In Alert Boxes -->
+            <div class="alert alert-success d-none py-2 px-3 small rounded-3 mb-3" id="signInSuccessAlert" role="alert"></div>
+            <div class="alert alert-danger d-none py-2 px-3 small rounded-3 mb-3" id="signInAlert" role="alert"></div>
+
+            <form id="formSignIn" novalidate>
+              <!-- Email / Username -->
+              <div class="mb-3">
+                <label for="loginIdentifier" class="form-label fw-bold text-dark small">Email Address or Username</label>
+                <div class="input-group">
+                  <span class="input-group-text auth-input-icon">
+                    <i class="bi bi-envelope"></i>
+                  </span>
+                  <input type="text" class="form-control modern-input border-start-0" id="loginIdentifier" placeholder="name@example.com or username" required autocomplete="username">
                 </div>
               </div>
-              <div>
-                <h2 class="fs-2 fw-bolder mb-1 text-dark" id="metricTotalTarget">$0.00</h2>
-                <small class="text-muted">Target across all registered goals</small>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Metric 3: Total Saved Amount -->
-        <div class="col-12 col-sm-6 col-xl-3">
-          <div class="card h-100 metric-card border-0 rounded-4 shadow-sm">
-            <div class="card-body p-4 d-flex flex-column justify-content-between">
-              <div class="d-flex align-items-center justify-content-between mb-3">
-                <span class="metric-label">Total Saved</span>
-                <div class="metric-icon-wrapper bg-emerald-subtle text-emerald">
-                  <i class="bi bi-wallet-fill"></i>
+              <!-- Password -->
+              <div class="mb-4">
+                <label for="loginPassword" class="form-label fw-bold text-dark small">Password</label>
+                <div class="input-group">
+                  <span class="input-group-text auth-input-icon">
+                    <i class="bi bi-lock"></i>
+                  </span>
+                  <input type="password" class="form-control modern-input border-start-0 border-end-0" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+                  <button class="btn btn-outline-secondary auth-input-icon border-start-0" type="button" id="btnToggleLoginPassword" title="Show/Hide Password">
+                    <i class="bi bi-eye"></i>
+                  </button>
                 </div>
               </div>
-              <div>
-                <h2 class="fs-2 fw-bolder mb-1 text-emerald" id="metricTotalSaved">$0.00</h2>
-                <small class="text-muted" id="metricRemainingToSave">Remaining to save: $0.00</small>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Metric 4: Completed Goals -->
-        <div class="col-12 col-sm-6 col-xl-3">
-          <div class="card h-100 metric-card border-0 rounded-4 shadow-sm">
-            <div class="card-body p-4 d-flex flex-column justify-content-between">
-              <div class="d-flex align-items-center justify-content-between mb-3">
-                <span class="metric-label">Completed Goals</span>
-                <div class="metric-icon-wrapper bg-amber-subtle text-amber">
-                  <i class="bi bi-trophy-fill"></i>
-                </div>
-              </div>
-              <div>
-                <div class="d-flex align-items-baseline gap-2 mb-1">
-                  <h2 class="fs-2 fw-bolder mb-0 text-dark" id="metricCompletedGoals">0 / 0</h2>
-                  <span class="badge bg-success-subtle text-success rounded-pill fw-bold" id="metricCompletedRate">0%</span>
-                </div>
-                <small class="text-muted" id="metricInProgressCount">0 in progress</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 3: Filter & Search Bar -->
-    <section class="card border-0 shadow-sm rounded-4 mb-4 filter-container-card" aria-label="Goal Search and Filters">
-      <div class="card-body p-3 p-md-4">
-        <div class="row g-3 align-items-center">
-          <!-- Search Input -->
-          <div class="col-12 col-md-4">
-            <label for="searchInput" class="visually-hidden">Search Goals</label>
-            <div class="input-group">
-              <span class="input-group-text search-icon-addon">
-                <i class="bi bi-search"></i>
-              </span>
-              <input type="text" id="searchInput" class="form-control modern-input border-start-0 ps-0" placeholder="Search by title or description..." autocomplete="off">
-              <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnClearSearch" title="Clear Search">
-                <i class="bi bi-x-lg"></i>
+              <!-- Submit Button -->
+              <button type="submit" class="btn btn-auth-primary w-100 py-2 rounded-3 fw-bold mb-3 d-flex align-items-center justify-content-center gap-2" id="btnSubmitLogin">
+                <span class="spinner-border spinner-border-sm d-none" id="loginSpinner" role="status"></span>
+                <i class="bi bi-box-arrow-in-right"></i>
+                <span>Sign In</span>
               </button>
+            </form>
+
+            <div class="text-center mt-3 pt-3 border-top">
+              <p class="text-muted small mb-0">
+                Don't have an account yet? 
+                <a href="javascript:void(0)" class="text-primary fw-bold text-decoration-none" id="linkToRegister">
+                  Create an account / Sign up
+                </a>
+              </p>
             </div>
           </div>
 
-          <!-- Category Filter -->
-          <div class="col-12 col-sm-6 col-md-3">
-            <label for="categoryFilter" class="visually-hidden">Filter by Category</label>
-            <select class="form-select modern-select" id="categoryFilter">
-              <option value="All" selected>All Categories</option>
-              <option value="Emergency">🚨 Emergency</option>
-              <option value="Tech & Gadgets">💻 Tech & Gadgets</option>
-              <option value="Education">🎓 Education</option>
-              <option value="Travel">✈️ Travel</option>
-              <option value="Vehicle">🚗 Vehicle</option>
-              <option value="Other">🏷️ Other</option>
-            </select>
+          <!-- 2. CREATE ACCOUNT CARD (Matches User Design Screenshot 2) -->
+          <div class="card auth-card border-0 shadow-lg rounded-4 p-4 p-md-5 d-none" id="cardRegister">
+            <div class="text-center mb-4">
+              <div class="auth-icon-badge mx-auto mb-3">
+                <i class="bi bi-wallet2 text-white fs-3"></i>
+              </div>
+              <h3 class="fw-bold text-dark mb-1">Create an Account</h3>
+              <p class="text-muted small">Join Savings Goal Tracker as a Student Saver or Professional</p>
+            </div>
+
+            <!-- Register Alert Box -->
+            <div class="alert alert-danger d-none py-2 px-3 small rounded-3 mb-3" id="registerAlert" role="alert"></div>
+
+            <form id="formRegister" novalidate>
+              <!-- Role Selector (Side by side cards matching Screenshot 2) -->
+              <div class="mb-3">
+                <label class="form-label fw-bold text-dark small mb-2">Select Your Account Role <span class="text-danger">*</span></label>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <div class="role-selector-card p-3 rounded-3 text-start active" id="roleCardStudent" data-role="Student Saver">
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-mortarboard-fill fs-5"></i>
+                        <strong class="small">Student Saver</strong>
+                      </div>
+                      <span class="role-subtext">I want to track student budget and emergency fund</span>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="role-selector-card p-3 rounded-3 text-start" id="roleCardProfessional" data-role="Working Professional">
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-briefcase-fill fs-5"></i>
+                        <strong class="small">Client / Pro</strong>
+                      </div>
+                      <span class="role-subtext">I want to track career & long-term goals</span>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" id="registerRole" value="Student Saver">
+              </div>
+
+              <!-- Full Name -->
+              <div class="mb-3">
+                <label for="registerName" class="form-label fw-bold text-dark small">Full Name <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text auth-input-icon">
+                    <i class="bi bi-person"></i>
+                  </span>
+                  <input type="text" class="form-control modern-input border-start-0" id="registerName" placeholder="Your Full Name" required minlength="2" maxlength="50">
+                </div>
+              </div>
+
+              <!-- Username -->
+              <div class="mb-3">
+                <label for="registerUsername" class="form-label fw-bold text-dark small">Username <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text auth-input-icon">
+                    <i class="bi bi-at"></i>
+                  </span>
+                  <input type="text" class="form-control modern-input border-start-0" id="registerUsername" placeholder="e.g. austine12" required minlength="3" maxlength="30">
+                </div>
+              </div>
+
+              <!-- Email Address -->
+              <div class="mb-3">
+                <label for="registerEmail" class="form-label fw-bold text-dark small">Email Address <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text auth-input-icon">
+                    <i class="bi bi-envelope"></i>
+                  </span>
+                  <input type="email" class="form-control modern-input border-start-0" id="registerEmail" placeholder="name@example.com" required>
+                </div>
+              </div>
+
+              <!-- Password & Confirm Password (Side-by-side) -->
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-sm-6">
+                  <label for="registerPassword" class="form-label fw-bold text-dark small">Password <span class="text-danger">*</span></label>
+                  <input type="password" class="form-control modern-input" id="registerPassword" placeholder="Minimum 6 characters" required minlength="6">
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label for="registerConfirmPassword" class="form-label fw-bold text-dark small">Confirm Password <span class="text-danger">*</span></label>
+                  <input type="password" class="form-control modern-input" id="registerConfirmPassword" placeholder="Repeat password" required minlength="6">
+                </div>
+              </div>
+
+              <!-- Academic & Skills Details (Optional Box matching Screenshot 2) -->
+              <div class="optional-details-box p-3 rounded-3 mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2 text-dark small fw-bold">
+                  <i class="bi bi-mortarboard text-primary"></i>
+                  <span>Academic & Skills Details (Optional)</span>
+                </div>
+                <div class="row g-2 mb-2">
+                  <div class="col-12 col-sm-6">
+                    <label for="registerInstitution" class="form-label small text-muted mb-1">College / University</label>
+                    <input type="text" class="form-control form-control-sm modern-input" id="registerInstitution" placeholder="e.g. University College of Engineering">
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <label for="registerDegree" class="form-label small text-muted mb-1">Degree & Branch</label>
+                    <input type="text" class="form-control form-control-sm modern-input" id="registerDegree" placeholder="e.g. B.Tech Computer Science">
+                  </div>
+                </div>
+                <div>
+                  <label for="registerFocus" class="form-label small text-muted mb-1">Core Savings Focus (Comma separated)</label>
+                  <input type="text" class="form-control form-control-sm modern-input" id="registerFocus" placeholder="e.g. Emergency Fund, Laptop, Certifications">
+                  <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">These goals will power your personalized savings milestones.</small>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" class="btn btn-auth-primary w-100 py-2 rounded-3 fw-bold mb-3 d-flex align-items-center justify-content-center gap-2" id="btnSubmitRegister">
+                <span class="spinner-border spinner-border-sm d-none" id="registerSpinner" role="status"></span>
+                <i class="bi bi-person-plus-fill"></i>
+                <span>Create Account</span>
+              </button>
+            </form>
+
+            <div class="text-center mt-3 pt-3 border-top">
+              <p class="text-muted small mb-0">
+                Already have an account? 
+                <a href="javascript:void(0)" class="text-primary fw-bold text-decoration-none" id="linkToSignIn">
+                  Sign in
+                </a>
+              </p>
+            </div>
           </div>
 
-          <!-- Status Filter -->
-          <div class="col-6 col-sm-3 col-md-2">
-            <label for="statusFilter" class="visually-hidden">Filter by Status</label>
-            <select class="form-select modern-select" id="statusFilter">
-              <option value="all" selected>All Statuses</option>
-              <option value="in-progress">⏳ In Progress</option>
-              <option value="completed">🎉 Completed</option>
-            </select>
-          </div>
-
-          <!-- Sort Selector -->
-          <div class="col-6 col-sm-3 col-md-2">
-            <label for="sortFilter" class="visually-hidden">Sort Goals</label>
-            <select class="form-select modern-select" id="sortFilter">
-              <option value="newest" selected>Newest First</option>
-              <option value="deadline">Nearest Deadline</option>
-              <option value="progressHigh">Highest % Saved</option>
-              <option value="targetHigh">Highest Target</option>
-              <option value="targetLow">Lowest Target</option>
-            </select>
-          </div>
-
-          <!-- Reset Button -->
-          <div class="col-12 col-md-1 text-md-end">
-            <button type="button" class="btn btn-light w-100 border text-secondary rounded-3" id="btnResetFilters" title="Reset Filters & Refresh">
-              <i class="bi bi-arrow-counterclockwise"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Filter Count & Visual Color Legend -->
-        <div class="d-flex flex-wrap align-items-center justify-content-between mt-3 pt-3 border-top small text-muted gap-2">
-          <div id="filterResultCount">Showing all goals</div>
-          <div class="d-flex flex-wrap align-items-center gap-2">
-            <span class="legend-chip">
-              <span class="legend-dot bg-warning me-1"></span> &lt; 50% Warning
-            </span>
-            <span class="legend-chip">
-              <span class="legend-dot bg-info me-1"></span> &ge; 50% Mid
-            </span>
-            <span class="legend-chip">
-              <span class="legend-dot bg-success me-1"></span> 100% Completed
-            </span>
-          </div>
         </div>
       </div>
     </section>
 
-    <!-- SECTION 4: Goals Grid Display -->
-    <section aria-label="Savings Goals Grid">
-      <!-- Loading State Spinner -->
-      <div id="loadingState" class="text-center py-5 d-none">
-        <div class="spinner-grow text-primary" role="status" style="width: 3.5rem; height: 3.5rem;">
-          <span class="visually-hidden">Loading goals...</span>
-        </div>
-        <p class="text-muted mt-3 fw-semibold">Loading your savings goals from MongoDB...</p>
-      </div>
+    <!-- ========================================== -->
+    <!-- SECTION B: MAIN SAVINGS DASHBOARD (Visible when logged in) -->
+    <!-- ========================================== -->
+    <div id="dashboardSection" class="d-none">
 
-      <!-- Empty State -->
-      <div id="emptyState" class="card border-0 shadow-sm rounded-4 text-center py-5 px-3 d-none">
-        <div class="card-body">
-          <div class="empty-icon-box mx-auto mb-3 text-primary bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center">
-            <i class="bi bi-wallet-fill display-5"></i>
+      <!-- System Diagnostic Banner -->
+      <div class="system-diagnostic-bar mb-4 p-3 rounded-3 d-flex flex-wrap align-items-center justify-content-between gap-3 shadow-sm">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-dark text-white border border-secondary px-2 py-1">
+              <i class="bi bi-server text-warning me-1"></i> Backend:
+            </span>
+            <span class="fw-semibold text-white small" id="sysNodeStatus">Node.js v24 (Express.js)</span>
           </div>
-          <h3 class="fw-bold mb-2">No Savings Goals Found</h3>
-          <p class="text-muted mx-auto mb-4" style="max-width: 480px;">
-            You haven't created any savings goals matching your current filter criteria yet. Start building your financial future by creating your first goal!
-          </p>
-          <button type="button" class="btn btn-action-create px-4 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#goalModal">
-            <i class="bi bi-plus-circle-fill me-1"></i> Create Your First Goal
+          <div class="diagnostic-divider d-none d-md-block"></div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-dark text-white border border-secondary px-2 py-1">
+              <i class="bi bi-database-check text-success me-1"></i> Database:
+            </span>
+            <span class="fw-semibold text-success small" id="sysDbStatus">MongoDB (Mongoose ODM) &bull; Connected</span>
+          </div>
+          <div class="diagnostic-divider d-none d-md-block"></div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-dark text-white border border-secondary px-2 py-1">
+              <i class="bi bi-layers-fill text-info me-1"></i> Pattern:
+            </span>
+            <span class="fw-semibold text-info small">MVC (Models, Views, Controllers, Routes)</span>
+          </div>
+        </div>
+        <div>
+          <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1 small" data-bs-toggle="modal" data-bs-target="#systemInfoModal">
+            <i class="bi bi-cpu me-1"></i> System Info
           </button>
         </div>
       </div>
 
-      <!-- Goals Container Grid -->
-      <div class="row g-4" id="goalsGrid">
-        <!-- Rendered dynamically by public/js/app.js -->
-      </div>
-    </section>
+      <!-- Top Hero Banner -->
+      <section class="hero-banner mb-4 p-4 p-md-5 rounded-4 text-white position-relative overflow-hidden shadow">
+        <div class="row align-items-center position-relative z-1">
+          <div class="col-lg-8">
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill hero-tag mb-3">
+              <i class="bi bi-stars text-warning"></i>
+              <span class="small fw-semibold" id="heroGreeting">Welcome back!</span>
+            </div>
+            <h1 class="hero-title fw-extrabold mb-2">Track, Save & Achieve Your Financial Milestones</h1>
+            <p class="hero-description text-white-50 mb-0">
+              Personalized savings tracker dashboard with full-stack CRUD capabilities, automated progress calculations, quick deposits, and user isolation.
+            </p>
+          </div>
+          <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+            <div class="hero-stat-card d-inline-flex flex-column align-items-lg-end p-3 rounded-3">
+              <span class="text-white-50 small text-uppercase fw-semibold tracking-wider">Your Active Milestones</span>
+              <span class="fs-2 fw-bolder text-white" id="heroGoalStats">0 Goals Active</span>
+              <small class="text-success fw-semibold"><i class="bi bi-check-circle-fill me-1"></i>Private Session</small>
+            </div>
+          </div>
+        </div>
+        <div class="hero-glow-1"></div>
+        <div class="hero-glow-2"></div>
+      </section>
+
+      <!-- Analytics Overview Cards (Top Metric Bar) -->
+      <section class="mb-4" aria-label="Savings Analytics Overview">
+        <div class="row g-3">
+          <!-- Metric 1: Overall Progress -->
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 metric-card border-0 rounded-4 shadow-sm">
+              <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <span class="metric-label">Overall Progress</span>
+                  <div class="metric-icon-wrapper bg-indigo-subtle text-indigo">
+                    <i class="bi bi-pie-chart-fill"></i>
+                  </div>
+                </div>
+                <div>
+                  <div class="d-flex align-items-baseline gap-2 mb-2">
+                    <h2 class="fs-2 fw-bolder mb-0 text-dark" id="metricOverallProgress">0%</h2>
+                    <small class="text-muted" id="metricRemainingText">of total target</small>
+                  </div>
+                  <div class="progress progress-track rounded-pill">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-indigo" id="metricProgressBar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metric 2: Total Target Amount -->
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 metric-card border-0 rounded-4 shadow-sm">
+              <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <span class="metric-label">Total Target</span>
+                  <div class="metric-icon-wrapper bg-purple-subtle text-purple">
+                    <i class="bi bi-bullseye"></i>
+                  </div>
+                </div>
+                <div>
+                  <h2 class="fs-2 fw-bolder mb-1 text-dark" id="metricTotalTarget">$0.00</h2>
+                  <small class="text-muted">Target across your goals</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metric 3: Total Saved Amount -->
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 metric-card border-0 rounded-4 shadow-sm">
+              <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <span class="metric-label">Total Saved</span>
+                  <div class="metric-icon-wrapper bg-emerald-subtle text-emerald">
+                    <i class="bi bi-wallet-fill"></i>
+                  </div>
+                </div>
+                <div>
+                  <h2 class="fs-2 fw-bolder mb-1 text-emerald" id="metricTotalSaved">$0.00</h2>
+                  <small class="text-muted" id="metricRemainingToSave">Remaining to save: $0.00</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metric 4: Completed Goals -->
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 metric-card border-0 rounded-4 shadow-sm">
+              <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <span class="metric-label">Completed Goals</span>
+                  <div class="metric-icon-wrapper bg-amber-subtle text-amber">
+                    <i class="bi bi-trophy-fill"></i>
+                  </div>
+                </div>
+                <div>
+                  <div class="d-flex align-items-baseline gap-2 mb-1">
+                    <h2 class="fs-2 fw-bolder mb-0 text-dark" id="metricCompletedGoals">0 / 0</h2>
+                    <span class="badge bg-success-subtle text-success rounded-pill fw-bold" id="metricCompletedRate">0%</span>
+                  </div>
+                  <small class="text-muted" id="metricInProgressCount">0 in progress</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Filter & Search Bar -->
+      <section class="card border-0 shadow-sm rounded-4 mb-4 filter-container-card" aria-label="Goal Search and Filters">
+        <div class="card-body p-3 p-md-4">
+          <div class="row g-3 align-items-center">
+            <!-- Search Input -->
+            <div class="col-12 col-md-4">
+              <label for="searchInput" class="visually-hidden">Search Goals</label>
+              <div class="input-group">
+                <span class="input-group-text search-icon-addon">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="searchInput" class="form-control modern-input border-start-0 ps-0" placeholder="Search by title or description..." autocomplete="off">
+                <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnClearSearch" title="Clear Search">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <label for="categoryFilter" class="visually-hidden">Filter by Category</label>
+              <select class="form-select modern-select" id="categoryFilter">
+                <option value="All" selected>All Categories</option>
+                <option value="Emergency">🚨 Emergency</option>
+                <option value="Tech & Gadgets">💻 Tech & Gadgets</option>
+                <option value="Education">🎓 Education</option>
+                <option value="Travel">✈️ Travel</option>
+                <option value="Vehicle">🚗 Vehicle</option>
+                <option value="Other">🏷️ Other</option>
+              </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-6 col-sm-3 col-md-2">
+              <label for="statusFilter" class="visually-hidden">Filter by Status</label>
+              <select class="form-select modern-select" id="statusFilter">
+                <option value="all" selected>All Statuses</option>
+                <option value="in-progress">⏳ In Progress</option>
+                <option value="completed">🎉 Completed</option>
+              </select>
+            </div>
+
+            <!-- Sort Selector -->
+            <div class="col-6 col-sm-3 col-md-2">
+              <label for="sortFilter" class="visually-hidden">Sort Goals</label>
+              <select class="form-select modern-select" id="sortFilter">
+                <option value="newest" selected>Newest First</option>
+                <option value="deadline">Nearest Deadline</option>
+                <option value="progressHigh">Highest % Saved</option>
+                <option value="targetHigh">Highest Target</option>
+                <option value="targetLow">Lowest Target</option>
+              </select>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="col-12 col-md-1 text-md-end">
+              <button type="button" class="btn btn-light w-100 border text-secondary rounded-3" id="btnResetFilters" title="Reset Filters & Refresh">
+                <i class="bi bi-arrow-counterclockwise"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Count & Visual Color Legend -->
+          <div class="d-flex flex-wrap align-items-center justify-content-between mt-3 pt-3 border-top small text-muted gap-2">
+            <div id="filterResultCount">Showing all goals</div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <span class="legend-chip">
+                <span class="legend-dot bg-warning me-1"></span> &lt; 50% Warning
+              </span>
+              <span class="legend-chip">
+                <span class="legend-dot bg-info me-1"></span> &ge; 50% Mid
+              </span>
+              <span class="legend-chip">
+                <span class="legend-dot bg-success me-1"></span> 100% Completed
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Goals Grid Display -->
+      <section aria-label="Savings Goals Grid">
+        <!-- Loading State Spinner -->
+        <div id="loadingState" class="text-center py-5 d-none">
+          <div class="spinner-grow text-primary" role="status" style="width: 3.5rem; height: 3.5rem;">
+            <span class="visually-hidden">Loading goals...</span>
+          </div>
+          <p class="text-muted mt-3 fw-semibold">Loading your savings goals from MongoDB...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="card border-0 shadow-sm rounded-4 text-center py-5 px-3 d-none">
+          <div class="card-body">
+            <div class="empty-icon-box mx-auto mb-3 text-primary bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center">
+              <i class="bi bi-wallet-fill display-5"></i>
+            </div>
+            <h3 class="fw-bold mb-2">No Savings Goals Found</h3>
+            <p class="text-muted mx-auto mb-4" style="max-width: 480px;">
+              You haven't created any savings goals matching your current filter criteria yet. Start building your financial future by creating your first goal!
+            </p>
+            <button type="button" class="btn btn-action-create px-4 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#goalModal">
+              <i class="bi bi-plus-circle-fill me-1"></i> Create Your First Goal
+            </button>
+          </div>
+        </div>
+
+        <!-- Goals Container Grid -->
+        <div class="row g-4" id="goalsGrid">
+          <!-- Rendered dynamically by public/js/app.js -->
+        </div>
+      </section>
+
+    </div>
 
   </main>
 
@@ -361,10 +572,7 @@
 
         <form id="goalForm" novalidate>
           <div class="modal-body px-4 py-3">
-            <!-- Hidden field for Edit mode ID -->
             <input type="hidden" id="goalFormId" value="">
-
-            <!-- Global form alert box for server errors -->
             <div class="alert alert-danger d-none py-2 px-3 small rounded-3" id="formAlertBox" role="alert"></div>
 
             <div class="row g-3">
@@ -507,7 +715,7 @@
     </div>
   </div>
 
-  <!-- Modal 3: System Diagnostics & Verification Modal (Proof of Node.js & MongoDB) -->
+  <!-- Modal 3: System Diagnostics & Verification Modal -->
   <div class="modal fade" id="systemInfoModal" tabindex="-1" aria-labelledby="systemInfoTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
       <div class="modal-content border-0 shadow-lg rounded-4 modal-pro p-4">

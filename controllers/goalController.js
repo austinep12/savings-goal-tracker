@@ -18,19 +18,23 @@ const isFutureOrToday = (dateInput) => {
 };
 
 /**
- * @desc    Get all savings goals with optional search, filter & sorting
+ * @desc    Get all savings goals for authenticated user
  * @route   GET /api/goals
- * @access  Public
+ * @access  Private
  */
 const getGoals = async (req, res) => {
   try {
     const { search, category, status, sort } = req.query;
-    const filter = {};
+
+    // Filter strictly by authenticated user
+    const filter = { user: req.user._id };
 
     // Search query by title or description
     if (search && search.trim() !== '') {
       const searchRegex = new RegExp(search.trim(), 'i');
-      filter.$or = [{ title: searchRegex }, { description: searchRegex }];
+      filter.$and = [
+        { $or: [{ title: searchRegex }, { description: searchRegex }] }
+      ];
     }
 
     // Category filter
@@ -38,7 +42,7 @@ const getGoals = async (req, res) => {
       filter.category = category;
     }
 
-    // Status filter (completed vs in-progress)
+    // Status filter
     if (status === 'completed') {
       filter.isCompleted = true;
     } else if (status === 'in-progress') {
@@ -46,7 +50,7 @@ const getGoals = async (req, res) => {
     }
 
     // Sorting
-    let sortOption = { createdAt: -1 }; // default: newest first
+    let sortOption = { createdAt: -1 };
     if (sort === 'oldest') {
       sortOption = { createdAt: 1 };
     } else if (sort === 'deadline') {
@@ -55,8 +59,6 @@ const getGoals = async (req, res) => {
       sortOption = { targetAmount: -1 };
     } else if (sort === 'targetLow') {
       sortOption = { targetAmount: 1 };
-    } else if (sort === 'progressHigh') {
-      // Handled via JavaScript sorting after retrieval or aggregation
     }
 
     let goals = await Goal.find(filter).sort(sortOption);
@@ -85,13 +87,13 @@ const getGoals = async (req, res) => {
 };
 
 /**
- * @desc    Get analytics summary metadata across all goals
+ * @desc    Get analytics summary metadata for authenticated user
  * @route   GET /api/goals/summary
- * @access  Public
+ * @access  Private
  */
 const getGoalsSummary = async (req, res) => {
   try {
-    const goals = await Goal.find();
+    const goals = await Goal.find({ user: req.user._id });
 
     const totalGoalsCount = goals.length;
     let totalTargetAmount = 0;
@@ -147,9 +149,9 @@ const getGoalsSummary = async (req, res) => {
 };
 
 /**
- * @desc    Create a new savings goal
+ * @desc    Create a new savings goal for authenticated user
  * @route   POST /api/goals
- * @access  Public
+ * @access  Private
  */
 const createGoal = async (req, res) => {
   try {
@@ -213,10 +215,10 @@ const createGoal = async (req, res) => {
       });
     }
 
-    // Check completion status automatically
     const isCompleted = parsedCurrent >= parsedTarget;
 
     const newGoal = await Goal.create({
+      user: req.user._id,
       title: title.trim(),
       targetAmount: parsedTarget,
       currentAmount: parsedCurrent,
@@ -244,7 +246,7 @@ const createGoal = async (req, res) => {
 /**
  * @desc    Update an existing savings goal
  * @route   PUT /api/goals/:id
- * @access  Public
+ * @access  Private
  */
 const updateGoal = async (req, res) => {
   try {
@@ -257,11 +259,15 @@ const updateGoal = async (req, res) => {
       });
     }
 
-    const existingGoal = await Goal.findById(id);
+    const existingGoal = await Goal.findOne({
+      _id: id,
+      user: req.user._id
+    });
+
     if (!existingGoal) {
       return res.status(404).json({
         success: false,
-        message: `Goal not found with ID: ${id}`
+        message: `Goal not found or not authorized with ID: ${id}`
       });
     }
 
@@ -330,9 +336,7 @@ const updateGoal = async (req, res) => {
       });
     }
 
-    // Auto-update isCompleted flag
     existingGoal.isCompleted = existingGoal.currentAmount >= existingGoal.targetAmount;
-
     const updatedGoal = await existingGoal.save();
 
     return res.status(200).json({
@@ -353,7 +357,7 @@ const updateGoal = async (req, res) => {
 /**
  * @desc    Add funds to goal currentAmount
  * @route   PATCH /api/goals/:id/add-funds
- * @access  Public
+ * @access  Private
  */
 const addFunds = async (req, res) => {
   try {
@@ -375,11 +379,15 @@ const addFunds = async (req, res) => {
       });
     }
 
-    const goal = await Goal.findById(id);
+    const goal = await Goal.findOne({
+      _id: id,
+      user: req.user._id
+    });
+
     if (!goal) {
       return res.status(404).json({
         success: false,
-        message: `Goal not found with ID: ${id}`
+        message: `Goal not found or not authorized with ID: ${id}`
       });
     }
 
@@ -393,7 +401,6 @@ const addFunds = async (req, res) => {
 
     goal.currentAmount = Math.round(newTotal * 100) / 100;
 
-    // Check if goal is completed
     const wasCompleted = goal.isCompleted;
     if (goal.currentAmount >= goal.targetAmount) {
       goal.isCompleted = true;
@@ -425,7 +432,7 @@ const addFunds = async (req, res) => {
 /**
  * @desc    Delete a savings goal
  * @route   DELETE /api/goals/:id
- * @access  Public
+ * @access  Private
  */
 const deleteGoal = async (req, res) => {
   try {
@@ -438,11 +445,15 @@ const deleteGoal = async (req, res) => {
       });
     }
 
-    const goal = await Goal.findById(id);
+    const goal = await Goal.findOne({
+      _id: id,
+      user: req.user._id
+    });
+
     if (!goal) {
       return res.status(404).json({
         success: false,
-        message: `Goal not found with ID: ${id}`
+        message: `Goal not found or not authorized with ID: ${id}`
       });
     }
 

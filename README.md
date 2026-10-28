@@ -33,8 +33,12 @@
 
 ---
 
-## ✨ Key Features
 - **MVC Architecture:** Clean separation of concerns across Models, Controllers, Routes, and Frontend Views.
+- **User Authentication & Role Management:**
+  - Secure sign-in and account registration with password hashing (`bcryptjs`) and stateless session tokens (`jsonwebtoken`).
+  - Role selection between **Student Saver** (education & gadget budget) and **Working Professional** (career & long-term milestones).
+  - Strict multi-tenant user isolation: users only access, modify, and deposit into their own goals.
+  - Automatic starter goals generated on registration or seamless legacy goal claiming.
 - **Dynamic Analytics Dashboard:**
   - Real-time overall savings percentage progress bar.
   - Total Target Amount ($) vs. Total Current Savings ($).
@@ -50,7 +54,6 @@
 - **Inline Fund Deposits:** One-click deposit using quick chips (`+$50`, `+$100`, `+$250`) or custom amounts without page reload.
 - **Dual-Layer Validation:** Strict client-side form validation (Bootstrap feedback) and server-side verification middleware.
 - **Search, Filter & Sorting:** Real-time search by title or description, category dropdown, status filter, and multi-parameter sorting.
-- **Automatic Seed Engine:** Pre-populates 3 sample goals on initial startup if the database collection is empty so the evaluator gets a ready-to-test dashboard.
 - **Zero-Setup Database Fallback:** Connects to MongoDB Atlas or local MongoDB; seamlessly switches to an embedded in-memory MongoDB runner if no external database is active.
 
 ---
@@ -130,21 +133,26 @@ The project strictly follows the **Model-View-Controller (MVC)** architectural d
 /savings-goal-tracker
   │── /config
   │    └── db.js                 # MongoDB connection & fallback setup
+  │── /middleware
+  │    └── auth.js               # JWT Bearer token protection middleware
   │── /models
-  │    └── Goal.js               # Mongoose schema with schema validation & virtuals
+  │    ├── User.js               # Mongoose User schema with bcrypt password hashing
+  │    └── Goal.js               # Mongoose Goal schema with user reference & virtuals
   │── /controllers
-  │    └── goalController.js     # Full CRUD logic & summary calculation
+  │    ├── authController.js     # User registration, login, JWT issuance, starter goals
+  │    └── goalController.js     # User-scoped CRUD logic & summary analytics
   │── /routes
-  │    └── goalRoutes.js         # Express REST API route endpoints
+  │    ├── authRoutes.js         # Register, Login, and Me profile route endpoints
+  │    └── goalRoutes.js         # Protected Express REST API goal endpoints
   │── /public                    # Frontend client assets
   │    ├── /css
-  │    │    └── style.css        # Custom CSS styling, glassmorphism, animations
+  │    │    └── style.css        # FinTech theme styling, auth cards, micro-animations
   │    ├── /js
-  │    │    └── app.js           # Client-side state, Fetch API, and validation logic
-  │    └── index.html            # Main responsive dashboard interface
+  │    │    └── app.js           # Client auth state, JWT token storage, CRUD Fetch API
+  │    └── index.html            # Sign-In, Register, and Main Dashboard interfaces
   │── .env.example               # Template environment configuration
   │── .gitignore                 # Files excluded from Git version control
-  │── server.js                  # Express application entry point & seeder
+  │── server.js                  # Express application entry point & router mounting
   │── package.json               # Project manifest, dependencies, and scripts
   └── README.md                  # Comprehensive documentation & evaluation guide
 ```
@@ -153,10 +161,23 @@ The project strictly follows the **Model-View-Controller (MVC)** architectural d
 
 ## 🗄 Database Schema
 
-Defined in `models/Goal.js`:
+### 1. User Schema (`models/User.js`)
 
 | Field | Type | Validation / Constraints | Default | Description |
 | :--- | :--- | :--- | :--- | :--- |
+| `name` | `String` | Required, Trimmed, Length: 2 - 50 chars | *None* | Full Name |
+| `username` | `String` | Required, Unique, Trimmed, Lowercase, Length: 3 - 30 chars | *None* | Unique account handle |
+| `email` | `String` | Required, Unique, Trimmed, Lowercase, Valid Email Regex | *None* | Account email address |
+| `password` | `String` | Required, Min length: 6 (Hashed with `bcryptjs`) | *None* | Hashed password |
+| `financialRole`| `String` | Enum: `['Student Saver', 'Personal Finance', 'Working Professional']` | `'Student Saver'` | Account profile category |
+| `institution`| `String` | Trimmed, Optional | `""` | College or Organization |
+| `createdAt` | `Date` | Automatically managed | `Date.now` | Registration timestamp |
+
+### 2. Goal Schema (`models/Goal.js`)
+
+| Field | Type | Validation / Constraints | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `user` | `ObjectId` | Reference to `User` model (`ref: 'User'`) | *None* | Owning user ID (Scoping) |
 | `title` | `String` | Required, Trimmed, Length: 3 - 50 chars | *None* | Goal name/milestone |
 | `targetAmount` | `Number` | Required, Minimum: 1 | *None* | Target savings amount ($) |
 | `currentAmount` | `Number` | Minimum: 0, Maximum: 1,000,000 | `0` | Funds saved to date ($) |

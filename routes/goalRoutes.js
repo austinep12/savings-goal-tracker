@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/auth');
 
 const {
   getGoals,
@@ -10,7 +11,10 @@ const {
   deleteGoal
 } = require('../controllers/goalController');
 
-// Analytics summary route (defined first to prevent conflict with parameter routes)
+// All savings goal endpoints are protected with JWT authentication
+router.use(protect);
+
+// Analytics summary route
 router.get('/summary', getGoalsSummary);
 
 // Collection routes

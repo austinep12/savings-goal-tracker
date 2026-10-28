@@ -11,6 +11,7 @@ dotenv.config();
 const { connectDB, disconnectDB } = require('./config/db');
 const Goal = require('./models/Goal');
 const goalRoutes = require('./routes/goalRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,6 +43,7 @@ app.use(async (req, res, next) => {
 });
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/goals', goalRoutes);
 
 // Health & System Info endpoint confirming Node.js & MongoDB runtime

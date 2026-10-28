@@ -11,6 +11,11 @@ const CATEGORIES = [
 
 const goalSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false // Optional for backward compatibility
+    },
     title: {
       type: String,
       required: [true, 'Goal title is required'],
